@@ -48,10 +48,6 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         super._beforeTokenTransfer(from, to, amount);
     }
 
-    function time() public view returns (uint256) {
-        return block.timestamp;
-    }
-
     function changeLimitTimeTx(uint256 _limitTimeTx) public onlyOwner {
         limitTimeTx = _limitTimeTx;
     }
