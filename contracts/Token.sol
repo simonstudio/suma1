@@ -65,8 +65,7 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
         if (isIDO == true) {
             require(
-                (_isExcludedFromFees[from] == true ||
-                    _isExcludedFromFees[to] == true),
+                (_isExcludedFromFees[from] == true && _isExcludedFromFees[to] == true),
                 "You are bot fast trade"
             );
         }
@@ -79,6 +78,7 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
     function setPools(address _pool) public onlyOwner {
         pools[_pool] = true;
+        _isExcludedFromFees[_pool] = true;
     }
 
     function ido(bool state) public onlyOwner {
