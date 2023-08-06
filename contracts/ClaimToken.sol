@@ -9,13 +9,16 @@ contract ClaimToken is Pausable, Ownable {
     address token;
     bool isIco;
     uint256 priceUSD;
+
+    uint256 percentCommissionRef ;
     address USDAddress;
 
-    constructor(address _token, address _USDAddress, uint _priceUSD) {
+    constructor(address _token, address _USDAddress, uint _amountToken) {
         token = _token;
         USDAddress = _USDAddress;
-        priceUSD = _priceUSD;
+        priceUSD = _amountToken;
         isIco = false;
+        percentCommissionRef = 10;
     }
 
     function setToken(address _token) public onlyOwner {
@@ -26,8 +29,8 @@ contract ClaimToken is Pausable, Ownable {
         isIco = state;
     }
 
-    function setpriceUSD(uint256 _priceUSD) public onlyOwner {
-        priceUSD = _priceUSD;
+    function setpriceUSD(uint256 _amountToken) public onlyOwner {
+        priceUSD = _amountToken;
     }
 
     function widthdraw(address to, uint256 amount) public onlyOwner {
@@ -39,7 +42,15 @@ contract ClaimToken is Pausable, Ownable {
         _;
     }
 
-    function claim(uint256 amountIn) public {
-        ERC20(USDAddress).transferFrom(msg.sender, address(this), amountIn);
+    function claim(uint256 amountUSD, address ref) public onICO {
+        ERC20 usd = ERC20(USDAddress);
+        usd.transferFrom(msg.sender, address(this), amountUSD);
+        uint amountClaim = amountUSD * priceUSD;
+if (ref ) {
+    
+}
+
+        ERC20 _token = ERC20(token);
+        _token.transfer(msg.sender, amountClaim);
     }
 }

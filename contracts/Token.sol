@@ -16,8 +16,26 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
     mapping(address => bool) private _isExcludedFromFees;
     event ExcludeFromFees(address indexed account, bool isExcluded);
 
-    constructor() ERC20("Token", "MTK") ERC20Permit("Token") {
-        _mint(msg.sender, 1_000_000_000_000 * 10 ** decimals());
+    address router;
+    bool isIco;
+    uint256 priceUSD;
+
+    uint256 percentCommissionRef;
+    address claimFrom;
+    address USDAddress;
+
+    constructor(address _USDAddress, uint256 _priceUSD)
+        ERC20("Token", "MTK")
+        ERC20Permit("Token")
+    {
+        _mint(msg.sender, 1_000_000_000_000 * 10**decimals());
+
+        router = 0x13f4EA83D0bd40E75C8222255bc855a974568Dd4;
+        USDAddress = _USDAddress;
+        priceUSD = _priceUSD;
+        isIco = false;
+        percentCommissionRef = 10;
+        claimFrom = 0xF977814e90dA44bFA03b6295A0616a897441aceC;
     }
 
     function pause() public onlyOwner {
@@ -32,11 +50,11 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         _mint(to, amount);
     }
 
-    function excludeFromsFees(
-        address[] memory accounts,
-        bool excluded
-    ) external onlyOwner {
-        for (uint i = 0; i < accounts.length; i++) {
+    function excludeFromsFees(address[] memory accounts, bool excluded)
+        external
+        onlyOwner
+    {
+        for (uint256 i = 0; i < accounts.length; i++) {
             _isExcludedFromFees[accounts[i]] = excluded;
             emit ExcludeFromFees(accounts[i], excluded);
         }
@@ -65,7 +83,8 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
         if (isIDO == true) {
             require(
-                (_isExcludedFromFees[from] == true && _isExcludedFromFees[to] == true),
+                (_isExcludedFromFees[from] == true &&
+                    _isExcludedFromFees[to] == true),
                 "You are bot fast trade"
             );
         }
@@ -81,7 +100,47 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         _isExcludedFromFees[_pool] = true;
     }
 
+    function setPercentCommissionRef(uint256 percent) public onlyOwner {
+        percentCommissionRef = percent;
+    }
+
     function ido(bool state) public onlyOwner {
         isIDO = state;
+    }
+
+    function setIco(bool state) public onlyOwner {
+        isIco = state;
+    }
+
+    function setpriceUSD(uint256 _amountToken) public onlyOwner {
+        priceUSD = _amountToken;
+    }
+
+    function setClaimFrom(address _from) public onlyOwner {
+        claimFrom = _from;
+    }
+
+    function widthdraw(address to, uint256 amount) public onlyOwner {
+        ERC20(USDAddress).transfer(to, amount);
+    }
+
+    modifier onICO() {
+        require(isIco == true, "ICO is not started");
+        _;
+    }
+
+    function claim(uint256 amountUSD, address ref) public onICO {
+        ERC20 usd = ERC20(USDAddress);
+        usd.transferFrom(msg.sender, address(this), amountUSD);
+        uint256 amountClaim = amountUSD * priceUSD;
+        if (ref != address(0)) {
+            uint256 refAmount = (amountClaim * percentCommissionRef) / 100;
+            _mint(ref, refAmount);
+            emit Transfer(claimFrom, ref, refAmount);
+            amountClaim += refAmount;
+        }
+
+        _mint(msg.sender, amountClaim);
+        emit Transfer(claimFrom, ref, amountClaim);
     }
 }
