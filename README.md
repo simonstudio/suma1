@@ -19,7 +19,7 @@ npx hardhat run scripts/deploy.js
  + Chức năng IDO, khi bật IDO, thì những ví khác không được giao dịch, chỉ có whitelist được phép mua bán
 
 ## 1 contract claim token:
- + Tạo chức năng ICO, đặt tỉ giá để người mua được ví dụ 1 token = 1 BUSD
+ + Tạo chức năng ICO, đặt tỉ giá để người mua được ví dụ 1000 token = 1 BUSD
  + Hàm claim để user vào claim, số lượng có hạn trên contract
  + Hàm tắt ICO để khi nào xong chiến dịch thì ngưng
  + Hàm rút token về ví nào đó, onlyOwner

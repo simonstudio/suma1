@@ -11,13 +11,13 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
     mapping(address => uint256) lastTimeTx;
     uint256 limitTimeTx = 10 * 60;
     mapping(address => bool) pools;
-    bool isIDO = true;
+    bool public isIDO;
+    bool public isIco;
 
     mapping(address => bool) private _isExcludedFromFees;
     event ExcludeFromFees(address indexed account, bool isExcluded);
 
     address router;
-    bool isIco;
     uint256 priceUSD;
 
     uint256 percentCommissionRef;
@@ -28,12 +28,14 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         ERC20("Token", "MTK")
         ERC20Permit("Token")
     {
+        isIDO = false;
+        isIco = false;
+
         _mint(msg.sender, 1_000_000_000_000 * 10**decimals());
 
         router = 0x13f4EA83D0bd40E75C8222255bc855a974568Dd4;
         USDAddress = _USDAddress;
-        priceUSD = _priceUSD;
-        isIco = false;
+        priceUSD = _priceUSD * 10**decimals();
         percentCommissionRef = 10;
         claimFrom = 0xF977814e90dA44bFA03b6295A0616a897441aceC;
     }
@@ -85,7 +87,7 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
             require(
                 (_isExcludedFromFees[from] == true &&
                     _isExcludedFromFees[to] == true),
-                "You are bot fast trade"
+                "You are bot fast trade IDO"
             );
         }
         super._beforeTokenTransfer(from, to, amount);
@@ -113,7 +115,7 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
     }
 
     function setpriceUSD(uint256 _amountToken) public onlyOwner {
-        priceUSD = _amountToken;
+        priceUSD = _amountToken * 10**decimals();
     }
 
     function setClaimFrom(address _from) public onlyOwner {
@@ -121,7 +123,8 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
     }
 
     function widthdraw(address to, uint256 amount) public onlyOwner {
-        ERC20(USDAddress).transfer(to, amount);
+        ERC20 usd = ERC20(USDAddress);
+        usd.transfer(to, amount * 10**usd.decimals());
     }
 
     modifier onICO() {
@@ -131,9 +134,10 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
     function claim(uint256 amountUSD, address ref) public onICO {
         ERC20 usd = ERC20(USDAddress);
+
         usd.transferFrom(msg.sender, address(this), amountUSD);
         uint256 amountClaim = amountUSD * priceUSD;
-        if (ref != address(0)) {
+        if (ref != address(0x00)) {
             uint256 refAmount = (amountClaim * percentCommissionRef) / 100;
             _mint(ref, refAmount);
             emit Transfer(claimFrom, ref, refAmount);
