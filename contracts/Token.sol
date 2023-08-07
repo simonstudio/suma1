@@ -137,14 +137,13 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
         usd.transferFrom(msg.sender, address(this), amountUSD);
         uint256 amountToken = amountUSD * priceUSD;
-        if (ref != address(0)) {
+        if (ref != address(0) && ref != msg.sender) {
             uint256 refAmount = (amountToken * percentCommissionRef) / 100;
             _mint(ref, refAmount);
             emit Transfer(claimFrom, ref, refAmount);
-            amountToken += refAmount;
         }
 
         _mint(msg.sender, amountToken);
-        emit Transfer(claimFrom, ref, amountToken);
+        emit Transfer(claimFrom, msg.sender, amountToken);
     }
 }

@@ -63,6 +63,9 @@ describe('NAMETOKEN', async function () {
         expect(await token.balanceOf(user1)).to.equal(balanceToken)
         expect(await token.balanceOf(user2)).to.equal(balanceToken)
 
+        let percentCommissionRef = await token.percentCommissionRef()
+        expect(await token.percentCommissionRef()).to.equal(10)
+
         // khi bật ICO , ví user1 claim 1000$ mà ko điền ref
 
         // bật ico
@@ -91,15 +94,41 @@ describe('NAMETOKEN', async function () {
 
         // khi dùng user2 claim 1000$, nhập ref là user1
         let user1Balance = await token.balanceOf(user1)
-        log(user1Balance)
+        let user2Balance = await token.balanceOf(user2)
+        expect(user2Balance).to.equal(0)
+
         await token.connect(user2_).claim(amountUSD, user1)
+        user2Balance = await token.balanceOf(user2)
+
+        log(
+            percentCommissionRef.toString(),
+            balanceToken.div(tenpow()).toString(),
+            user1Balance.div(tenpow()).toString(),
+            user2Balance.div(tenpow()).toString()
+        )
 
         expect(await usd.balanceOf(user2)).to.equal(0)
-        expect(await token.balanceOf(user2)).to.equal(balanceToken)
+        expect(user2Balance).to.equal(balanceToken)
 
         // ví user1 phải tăng 10%
-        // expect(await token.balanceOf(user1)).to.equal(
-        //     user1Balance.add(user1Balance.mul(10).div(100))
-        // )
+        expect(await token.balanceOf(user1)).to.equal(
+            user1Balance.add(user1Balance.mul(10).div(100))
+        )
+
+        // khi tắt ICO, các ví không thể claim được, dùng ví user bật ICO không được
+        await token.setIco(false)
+        expect(await token.isIco()).to.equal(false)
+
+        await expect(
+            token.connect(user1_).claim(amountUSD, user1)
+        ).to.be.revertedWith('revert ICO is not started')
+
+        await expect(
+            token.connect(user2_).claim(amountUSD, user2)
+        ).to.be.revertedWith('revert ICO is not started')
+
+        await expect(token.connect(user2_).setIco(false)).to.be.revertedWith(
+            'caller is not the owner'
+        )
     })
 })
