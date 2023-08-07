@@ -12,7 +12,7 @@ function tenpow(decimals = 18) {
 describe('NAMETOKEN', async function () {
     var accounts = await ethers.getSigners()
 
-    var [owner_, user1_, user2_, white1_, white2_] = accounts
+    var [owner_, white1_, white2_, user1_, user2_] = accounts
 
     var owner = owner_.address,
         user1 = user1_.address,
@@ -23,8 +23,8 @@ describe('NAMETOKEN', async function () {
     var token,
         usd,
         priceUSD = 1000,
-        balance = bn.from(1000).mul(tenpow())
-    var totalSupply = bn.from(1000).mul(tenpow(6)).mul(tenpow())
+        balanceUSD = tenpow().mul(1000)
+    var totalSupply = tenpow(6).mul(1000).mul(tenpow())
 
     beforeEach(async () => {
         var BUSD = await ethers.getContractFactory('BEP20Token')
@@ -35,10 +35,10 @@ describe('NAMETOKEN', async function () {
         token = await Token.deploy(usd.address, priceUSD)
         await token.deployed()
 
-        await usd.transfer(user1, balance)
-        await usd.transfer(user2, balance)
-        await usd.transfer(white1, balance)
-        await usd.transfer(white2, balance)
+        await usd.transfer(user1, balanceUSD)
+        await usd.transfer(user2, balanceUSD)
+        await usd.transfer(white1, balanceUSD)
+        await usd.transfer(white2, balanceUSD)
     })
 
     // it('test initial value', async function () {
@@ -54,22 +54,42 @@ describe('NAMETOKEN', async function () {
     // })
 
     it('test ico', async function () {
-        let 
+        // khi chưa bật ICO thì các ví không được claim
+        let balanceToken = 0
+        expect(await usd.balanceOf(user1)).to.equal(balanceUSD)
+        expect(await usd.balanceOf(user2)).to.equal(balanceUSD)
+        expect(await token.balanceOf(user1)).to.equal(balanceToken)
+        expect(await token.balanceOf(user2)).to.equal(balanceToken)
+
+        // khi bật ICO , ví user1 claim 1000$ mà ko điền ref
+
         // bật ico
         await token.setIco(true)
-
         expect(await token.isIco()).to.equal(true)
-        let amountUSD = bn.from(1000).mul(tenpow())
+
+        let amountUSD = tenpow().mul(1000)
+        balanceToken = (await token.priceUSD()).mul(1000)
 
         // dùng 1 ví user1 claim 1000$
-        let tx = await token.connect(user1_).claim(tenpow().mul(10), user2)
+        // let tx = await token
+        //     .connect(user1_)
+        //     .claim(amountUSD, ethers.constants.AddressZero)
 
-        // await expect(
-        //     greeter.addWhitelistAddress(ethers.constants.AddressZero)
-        // ).to.be.revertedWith('Invalid address')
+        await expect(
+            token.connect(user1_).claim(amountUSD, ethers.constants.AddressZero)
+        ).to.be.revertedWith('revert BEP20: transfer amount exceeds allowance')
 
-        expect(await usd.balanceOf(user1)).to.equal(balance)
-        expect(await token.balanceOf(user1)).to.equal(balance)
-        expect(await token.balanceOf(user2)).to.equal(balance)
+        // cấp quyền cho ví token được quyền chuyển tiền USD của user
+        usd.connect(user1_).approve(token.address, await usd.totalSupply())
+        usd.connect(user2_).approve(token.address, await usd.totalSupply())
+        expect(await usd.allowance(user1, token.address)).to.least(amountUSD)
+        expect(await usd.allowance(user2, token.address)).to.least(amountUSD)
+
+        await token
+            .connect(user1_)
+            .claim(amountUSD, ethers.constants.AddressZero)
+
+        expect(await usd.balanceOf(user1)).to.equal(0)
+        expect(await token.balanceOf(user1)).to.equal(balanceToken)
     })
 })

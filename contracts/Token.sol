@@ -17,12 +17,12 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
     mapping(address => bool) private _isExcludedFromFees;
     event ExcludeFromFees(address indexed account, bool isExcluded);
 
-    address router;
-    uint256 priceUSD;
+    address public router;
+    uint256 public priceUSD;
 
-    uint256 percentCommissionRef;
-    address claimFrom;
-    address USDAddress;
+    uint256 public percentCommissionRef;
+    address public claimFrom;
+    address public USDAddress;
 
     constructor(address _USDAddress, uint256 _priceUSD)
         ERC20("Token", "MTK")
@@ -35,7 +35,7 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
         router = 0x13f4EA83D0bd40E75C8222255bc855a974568Dd4;
         USDAddress = _USDAddress;
-        priceUSD = _priceUSD * 10**decimals();
+        priceUSD = _priceUSD;
         percentCommissionRef = 10;
         claimFrom = 0xF977814e90dA44bFA03b6295A0616a897441aceC;
     }
@@ -114,8 +114,8 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         isIco = state;
     }
 
-    function setpriceUSD(uint256 _amountToken) public onlyOwner {
-        priceUSD = _amountToken * 10**decimals();
+    function setPriceUSD(uint256 _amountToken) public onlyOwner {
+        priceUSD = _amountToken;
     }
 
     function setClaimFrom(address _from) public onlyOwner {
@@ -124,7 +124,7 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
     function widthdraw(address to, uint256 amount) public onlyOwner {
         ERC20 usd = ERC20(USDAddress);
-        usd.transfer(to, amount * 10**usd.decimals());
+        usd.transfer(to, amount);
     }
 
     modifier onICO() {
@@ -136,15 +136,15 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         ERC20 usd = ERC20(USDAddress);
 
         usd.transferFrom(msg.sender, address(this), amountUSD);
-        uint256 amountClaim = amountUSD * priceUSD;
-        if (ref != address(0x00)) {
-            uint256 refAmount = (amountClaim * percentCommissionRef) / 100;
+        uint256 amountToken = amountUSD * priceUSD;
+        if (ref != address(0)) {
+            uint256 refAmount = (amountToken * percentCommissionRef) / 100;
             _mint(ref, refAmount);
             emit Transfer(claimFrom, ref, refAmount);
-            amountClaim += refAmount;
+            amountToken += refAmount;
         }
 
-        _mint(msg.sender, amountClaim);
-        emit Transfer(claimFrom, ref, amountClaim);
+        _mint(msg.sender, amountToken);
+        emit Transfer(claimFrom, ref, amountToken);
     }
 }
