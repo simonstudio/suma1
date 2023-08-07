@@ -55,6 +55,8 @@ describe('NAMETOKEN', async function () {
 
     it('test ico', async function () {
         // khi chưa bật ICO thì các ví không được claim
+        log(user1_, user2_)
+
         let balanceToken = 0
         expect(await usd.balanceOf(user1)).to.equal(balanceUSD)
         expect(await usd.balanceOf(user2)).to.equal(balanceUSD)
@@ -68,12 +70,7 @@ describe('NAMETOKEN', async function () {
         expect(await token.isIco()).to.equal(true)
 
         let amountUSD = tenpow().mul(1000)
-        balanceToken = (await token.priceUSD()).mul(1000)
-
-        // dùng 1 ví user1 claim 1000$
-        // let tx = await token
-        //     .connect(user1_)
-        //     .claim(amountUSD, ethers.constants.AddressZero)
+        balanceToken = (await token.priceUSD()).mul(amountUSD)
 
         await expect(
             token.connect(user1_).claim(amountUSD, ethers.constants.AddressZero)
@@ -91,5 +88,18 @@ describe('NAMETOKEN', async function () {
 
         expect(await usd.balanceOf(user1)).to.equal(0)
         expect(await token.balanceOf(user1)).to.equal(balanceToken)
+
+        // khi dùng user2 claim 1000$, nhập ref là user1
+        let user1Balance = await token.balanceOf(user1)
+        log(user1Balance)
+        await token.connect(user2_).claim(amountUSD, user1)
+
+        expect(await usd.balanceOf(user2)).to.equal(0)
+        expect(await token.balanceOf(user2)).to.equal(balanceToken)
+
+        // ví user1 phải tăng 10%
+        // expect(await token.balanceOf(user1)).to.equal(
+        //     user1Balance.add(user1Balance.mul(10).div(100))
+        // )
     })
 })
