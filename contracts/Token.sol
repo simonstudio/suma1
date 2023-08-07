@@ -24,14 +24,14 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
     address public claimFrom;
     address public USDAddress;
 
-    constructor(address _USDAddress, uint256 _priceUSD)
-        ERC20("Token", "MTK")
-        ERC20Permit("Token")
-    {
+    constructor(
+        address _USDAddress,
+        uint256 _priceUSD
+    ) ERC20("Token", "MTK") ERC20Permit("Token") {
         isIDO = false;
         isIco = false;
 
-        _mint(msg.sender, 1_000_000_000_000 * 10**decimals());
+        _mint(msg.sender, 1_000_000_000_000 * 10 ** decimals());
 
         router = 0x13f4EA83D0bd40E75C8222255bc855a974568Dd4;
         USDAddress = _USDAddress;
@@ -52,10 +52,10 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         _mint(to, amount);
     }
 
-    function excludeFromsFees(address[] memory accounts, bool excluded)
-        external
-        onlyOwner
-    {
+    function excludeFromsFees(
+        address[] memory accounts,
+        bool excluded
+    ) external onlyOwner {
         for (uint256 i = 0; i < accounts.length; i++) {
             _isExcludedFromFees[accounts[i]] = excluded;
             emit ExcludeFromFees(accounts[i], excluded);
@@ -85,8 +85,9 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
         if (isIDO == true) {
             require(
-                (_isExcludedFromFees[from] == true &&
-                    _isExcludedFromFees[to] == true),
+                (_isExcludedFromFees[from] == true ||
+                    _isExcludedFromFees[to] == true ||
+                    (pools[from] != true && pools[to] != true)),
                 "You are bot fast trade IDO"
             );
         }
@@ -99,7 +100,6 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
     function setPools(address _pool) public onlyOwner {
         pools[_pool] = true;
-        _isExcludedFromFees[_pool] = true;
     }
 
     function setPercentCommissionRef(uint256 percent) public onlyOwner {

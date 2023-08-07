@@ -42,6 +42,8 @@ describe('NAMETOKEN', async function () {
         await usd.transfer(white1, balanceUSD)
         await usd.transfer(white2, balanceUSD)
 
+        // setPool
+        await token.setPools(pool)
         // cấp quyền cho router, pool
         await token.connect(pool_).approve(router, await token.totalSupply())
         await usd.connect(pool_).approve(router, await usd.totalSupply())
@@ -146,7 +148,78 @@ describe('NAMETOKEN', async function () {
     //     expect(await usd.balanceOf(token.address)).to.equal(amountUSD.mul(2))
     // })
 
-    it('test IDO: khi IDO tắt thì các ví giao dịch bình thường', async function () {
+    // it('test IDO: khi IDO tắt thì các ví giao dịch bình thường', async function () {
+    //     expect(await token.isIDO()).is.equal(false)
+    //     // chuyển token, usd các ví user1, user2
+    //     let balanceToken = tenpow().mul(1000)
+
+    //     await token.transfer(user1, balanceToken)
+    //     await token.transfer(user2, balanceToken)
+    //     await token.transfer(white1, balanceToken)
+    //     await token.transfer(white2, balanceToken)
+
+    //     expect(await token.balanceOf(user1)).to.equal(balanceToken)
+    //     expect(await token.balanceOf(user2)).to.equal(balanceToken)
+    //     expect(await token.balanceOf(white1)).to.equal(balanceToken)
+    //     expect(await token.balanceOf(white2)).to.equal(balanceToken)
+
+    //     let balanceLiquitUSD = balanceToken.mul(1000)
+    //     let balanceLiquitToken = balanceToken.mul(1000).mul(1000)
+
+    //     // add thanh khoản
+    //     await token.transfer(pool, balanceLiquitToken)
+    //     await usd.transfer(pool, balanceLiquitUSD)
+
+    //     expect(await token.balanceOf(pool)).to.equal(balanceLiquitToken)
+    //     expect(await usd.balanceOf(pool)).to.equal(balanceLiquitUSD)
+
+    //     // ví user1 mua: router chuyển USD vào pool, chuyển token từ pool cho user1
+    //     let priceUSD = await token.priceUSD()
+    //     let user1Balance = await token.balanceOf(user1)
+
+    //     // swap
+    //     await usd.connect(router_).transferFrom(user1, pool, balanceUSD)
+    //     await token
+    //         .connect(router_)
+    //         .transferFrom(pool, user1, balanceUSD.mul(priceUSD))
+
+    //     expect(await usd.balanceOf(pool)).to.equal(
+    //         balanceLiquitUSD.add(balanceUSD)
+    //     )
+    //     expect(await token.balanceOf(pool)).to.equal(
+    //         balanceLiquitToken.sub(balanceUSD.mul(priceUSD))
+    //     )
+
+    //     expect(await token.balanceOf(user1)).to.equal(
+    //         user1Balance.add(balanceUSD.mul(priceUSD))
+    //     )
+
+    //     // ví user1 mua: router chuyển USD vào pool, chuyển token từ pool cho user1
+    //     balanceLiquitUSD = await usd.balanceOf(pool)
+    //     balanceLiquitToken = await token.balanceOf(pool)
+    //     let user2Balance = await token.balanceOf(user2)
+
+    //     // swap
+    //     await usd.connect(router_).transferFrom(user2, pool, balanceUSD)
+    //     await token
+    //         .connect(router_)
+    //         .transferFrom(pool, user2, balanceUSD.mul(priceUSD))
+
+    //     expect(await usd.balanceOf(pool)).to.equal(
+    //         balanceLiquitUSD.add(balanceUSD)
+    //     )
+    //     expect(await token.balanceOf(pool)).to.equal(
+    //         balanceLiquitToken.sub(balanceUSD.mul(priceUSD))
+    //     )
+
+    //     expect(await token.balanceOf(user2)).to.equal(
+    //         user2Balance.add(balanceUSD.mul(priceUSD))
+    //     )
+    // })
+
+    it('test IDO: khi IDO bật thì các ví giao dịch bị lỗi', async function () {
+        await token.ido(true)
+        expect(await token.isIDO()).is.equal(true)
         // chuyển token, usd các ví user1, user2
         let balanceToken = tenpow().mul(1000)
 
@@ -160,32 +233,59 @@ describe('NAMETOKEN', async function () {
         expect(await token.balanceOf(white1)).to.equal(balanceToken)
         expect(await token.balanceOf(white2)).to.equal(balanceToken)
 
-        let balanceLiquit = balanceToken.mul(1000)
-        log({balanceLiquit: balanceLiquit.toString()})
+        let balanceLiquitUSD = balanceToken.mul(1000)
+        let balanceLiquitToken = balanceToken.mul(1000).mul(1000)
+
         // add thanh khoản
-        await token.transfer(pool, balanceLiquit.mul(1000))
-        await usd.transfer(pool, balanceLiquit)
+        await token.transfer(pool, balanceLiquitToken)
+        await usd.transfer(pool, balanceLiquitUSD)
 
-        expect(await token.balanceOf(pool)).to.equal(balanceLiquit.mul(1000))
-        expect(await usd.balanceOf(pool)).to.equal(balanceLiquit)
+        expect(await token.balanceOf(pool)).to.equal(balanceLiquitToken)
+        expect(await usd.balanceOf(pool)).to.equal(balanceLiquitUSD)
 
-        let priceUSD = await token.priceUSD()
         // ví user1 mua: router chuyển USD vào pool, chuyển token từ pool cho user1
-        log((await token.balanceOf(user1)).div(tenpow()).toString())
-        await usd.connect(router_).transferFrom(user1, pool, balanceUSD)
+        let priceUSD = await token.priceUSD()
+        let user1Balance = await token.balanceOf(user1)
+
+        // swap
+        await expect(
+            usd.connect(router_).transferFrom(user1, pool, balanceUSD)
+        ).to.be.revertedWith('You are bot fast trade IDO')
         await token
             .connect(router_)
             .transferFrom(pool, user1, balanceUSD.mul(priceUSD))
 
         expect(await usd.balanceOf(pool)).to.equal(
-            balanceLiquit.add(balanceUSD)
+            balanceLiquitUSD.add(balanceUSD)
         )
         expect(await token.balanceOf(pool)).to.equal(
-            balanceLiquit.mul(1000).sub(balanceUSD.mul(priceUSD))
+            balanceLiquitToken.sub(balanceUSD.mul(priceUSD))
         )
-        
-        log((await token.balanceOf(user1)).div(tenpow()).toString())
 
-        expect(await token.balanceOf(user1)).to.equal(balanceUSD.mul(priceUSD))
+        expect(await token.balanceOf(user1)).to.equal(
+            user1Balance.add(balanceUSD.mul(priceUSD))
+        )
+
+        // ví user1 mua: router chuyển USD vào pool, chuyển token từ pool cho user1
+        balanceLiquitUSD = await usd.balanceOf(pool)
+        balanceLiquitToken = await token.balanceOf(pool)
+        let user2Balance = await token.balanceOf(user2)
+
+        // swap
+        await usd.connect(router_).transferFrom(user2, pool, balanceUSD)
+        await token
+            .connect(router_)
+            .transferFrom(pool, user2, balanceUSD.mul(priceUSD))
+
+        expect(await usd.balanceOf(pool)).to.equal(
+            balanceLiquitUSD.add(balanceUSD)
+        )
+        expect(await token.balanceOf(pool)).to.equal(
+            balanceLiquitToken.sub(balanceUSD.mul(priceUSD))
+        )
+
+        expect(await token.balanceOf(user2)).to.equal(
+            user2Balance.add(balanceUSD.mul(priceUSD))
+        )
     })
 })
