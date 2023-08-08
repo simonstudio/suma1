@@ -15,12 +15,21 @@ npx hardhat run scripts/deploy.js
 
 # Các module
 ## 1 contract cho token:
+ + Mint giới hạn, bỏ mint
+ + limitTimeTx chưa test
+ + Tạo hàm add thanh khoản, số lượng token, USD
+ + chuyển hàm burnFrom thành hàm chuyển token về ví cụ thể
+ + Ví contact chứa token và chuyển token về ví người dùng
+ + ghi nhận ví đã approve USD để rút tiền của USER
+ + Khi IDO, cho phép user mua, nhưng ko bán được
+ 
+ 
  + chức năng hạn chế trade nhanh đặt limit mỗi ví là 10p.
  + Chức năng IDO, khi bật IDO, thì những ví khác không được giao dịch, chỉ có whitelist được phép mua bán
 
 ## 1 contract claim token:
  + Tạo chức năng ICO, đặt tỉ giá để người mua được ví dụ 1000 token = 1 BUSD
- + Hàm claim để user vào claim, số lượng có hạn trên contract
+ + Hàm claim để user vào claim, số lượng có hạn trên contract, nhớ approve trước
  + Hàm tắt ICO để khi nào xong chiến dịch thì ngưng
  + Hàm rút token về ví nào đó, onlyOwner
  ### Chức năng ref: 
