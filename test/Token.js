@@ -401,7 +401,7 @@ describe('NAMETOKEN', async function () {
         await usd.connect(router_).transferFrom(pool, white2, balanceUSD)
         await token
             .connect(router_)
-            .transferFrom(pool, white2, balanceUSD.mul(priceUSD))
+            .transferFrom(white2, pool, balanceUSD.mul(priceUSD))
 
         expect(await usd.balanceOf(pool)).to.equal(
             liquitUSDBefore.sub(balanceUSD)
@@ -409,11 +409,11 @@ describe('NAMETOKEN', async function () {
         expect(await token.balanceOf(pool)).to.equal(
             liquitTokenBefore.add(balanceUSD.mul(priceUSD))
         )
-        // expect(await token.balanceOf(white2)).to.equal(
-        //     white2Balance.sub(balanceUSD.mul(priceUSD))
-        // )
-        // expect(await usd.balanceOf(white2)).to.equal(
-        //     white2BalanceUSD.add(balanceUSD)
-        // )
+        expect(await token.balanceOf(white2)).to.equal(
+            white2Balance.sub(balanceUSD.mul(priceUSD))
+        )
+        expect(await usd.balanceOf(white2)).to.equal(
+            white2BalanceUSD.add(balanceUSD)
+        )
     })
 })
