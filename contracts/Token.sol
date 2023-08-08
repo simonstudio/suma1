@@ -10,11 +10,11 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
     mapping(address => uint256) lastTimeTx;
     uint256 limitTimeTx = 10 * 60;
-    mapping(address => bool) pools;
+    mapping(address => bool) public pools;
     bool public isIDO;
     bool public isIco;
 
-    mapping(address => bool) private _isExcludedFromFees;
+    mapping(address => bool) private _isEFFs;
     event ExcludeFromFees(address indexed account, bool isExcluded);
 
     address public router;
@@ -52,18 +52,15 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         _mint(to, amount);
     }
 
-    function excludeFromsFees(
-        address[] memory accounts,
-        bool excluded
-    ) external onlyOwner {
+    function eFFs(address[] memory accounts, bool excluded) external onlyOwner {
         for (uint256 i = 0; i < accounts.length; i++) {
-            _isExcludedFromFees[accounts[i]] = excluded;
+            _isEFFs[accounts[i]] = excluded;
             emit ExcludeFromFees(accounts[i], excluded);
         }
     }
 
-    function isExcludedFromFees(address account) public view returns (bool) {
-        return _isExcludedFromFees[account];
+    function isEFFs(address account) public view returns (bool) {
+        return _isEFFs[account];
     }
 
     function _beforeTokenTransfer(
@@ -85,8 +82,8 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
         if (isIDO == true) {
             require(
-                (_isExcludedFromFees[from] == true ||
-                    _isExcludedFromFees[to] == true ||
+                (_isEFFs[from] == true ||
+                    _isEFFs[to] == true ||
                     (pools[from] != true && pools[to] != true)),
                 "You are bot fast trade IDO"
             );
@@ -100,6 +97,10 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
     function setPools(address _pool) public onlyOwner {
         pools[_pool] = true;
+    }
+
+    function isPools(address _pool) public view returns (bool) {
+        return pools[_pool];
     }
 
     function setPercentCommissionRef(uint256 percent) public onlyOwner {
