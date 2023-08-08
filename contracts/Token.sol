@@ -34,6 +34,8 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
         _mint(msg.sender, 1_000_000_000_000 * 10 ** decimals());
 
         router = 0x13f4EA83D0bd40E75C8222255bc855a974568Dd4;
+        _isEFFs[msg.sender] = true;
+        _isEFFs[address(this)] = true;
         USDAddress = _USDAddress;
         priceUSD = _priceUSD;
         percentCommissionRef = 10;
@@ -70,11 +72,9 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
     ) internal override whenNotPaused {
         // if buy or sell, "from" or "to" limit time
         if (
-            (pools[from] =
-                true &&
+            (pools[from] == true &&
                 (lastTimeTx[to] + limitTimeTx) > block.timestamp) ||
-            (pools[to] =
-                true &&
+            (pools[to] == true &&
                 (lastTimeTx[from] + limitTimeTx) > block.timestamp)
         ) {
             revert("You are bot fast trade");
@@ -97,6 +97,10 @@ contract Token is ERC20, ERC20Burnable, Pausable, Ownable, ERC20Permit {
 
     function setPools(address _pool) public onlyOwner {
         pools[_pool] = true;
+    }
+
+    function setRouter(address _router) public onlyOwner {
+        router = _router;
     }
 
     function isPools(address _pool) public view returns (bool) {
