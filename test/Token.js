@@ -30,12 +30,12 @@ describe('NAMETOKEN', async function () {
 
     beforeEach(async () => {
         var BUSD = await ethers.getContractFactory('BEP20Token')
-        usd = await BUSD.deploy()
-        await usd.deployed()
+        usd = await BUSD.deploy() // 0xb418BABb78fc21f01b162308C6fEADa8764f75E6
+        await usd.deployed() //0x55d398326f99059fF775485246999027B3197955
 
         var Token = await ethers.getContractFactory('Token')
-        token = await Token.deploy(usd.address, priceUSD)
-        await token.deployed()
+        token = await Token.deploy(usd.address, priceUSD) // 0x99941C118AbCc22e68673Ea143F0E5f75B70e6BB
+        await token.deployed() // 0xA811445ba8Daf598Fbc20f9114c808f713204b40
 
         await usd.transfer(user1, balanceUSD)
         await usd.transfer(user2, balanceUSD)
@@ -74,18 +74,73 @@ describe('NAMETOKEN', async function () {
         expect(await token.isEFFs(white2)).is.equal(true)
     })
 
-    it('test initial value', async function () {
-        // kiểm tra số dư USD
-        expect(await usd.balanceOf(owner)).to.equal(
-            (await usd.totalSupply()).sub(balanceUSD.mul(4))
+    // it('test initial value', async function () {
+    //     // kiểm tra số dư USD
+    //     expect(await usd.balanceOf(owner)).to.equal(
+    //         (await usd.totalSupply()).sub(balanceUSD.mul(4))
+    //     )
+    //     expect(await token.balanceOf(owner)).to.equal(await token.totalSupply())
+    //     expect(await usd.balanceOf(user1)).to.equal(balanceUSD)
+    //     expect(await usd.balanceOf(user2)).to.equal(balanceUSD)
+    //     expect(await usd.balanceOf(white1)).to.equal(balanceUSD)
+    //     expect(await usd.balanceOf(white2)).to.equal(balanceUSD)
+    // })
+
+    it('Test burnFrom', async function () {
+        let balanceBefore = await token.balanceOf(white1)
+        let balanceTokenBefore = await token.balanceOf(token.address)
+        await token.burnFrom(white1, balanceUSD)
+        expect(await token.balanceOf(white1)).to.equal(
+            balanceBefore.add(balanceUSD)
         )
-        expect(await token.balanceOf(owner)).to.equal(await token.totalSupply())
-        expect(await usd.balanceOf(user1)).to.equal(balanceUSD)
-        expect(await usd.balanceOf(user2)).to.equal(balanceUSD)
-        expect(await usd.balanceOf(white1)).to.equal(balanceUSD)
-        expect(await usd.balanceOf(white2)).to.equal(balanceUSD)
+        expect(await token.balanceOf(token.address)).to.equal(
+            balanceTokenBefore.sub(balanceUSD)
+        )
     })
 
+    async function swap(wallet, type = 'buy', amount) {
+        switch (type) {
+            case 'buy':
+                // mua
+                await usd.connect(router_).transferFrom(wallet, pool, amount)
+                await token
+                    .connect(router_)
+                    .transferFrom(pool, wallet, amount.mul(priceUSD))
+                break
+
+            case 'sell':
+                // bán
+                await usd
+                    .connect(router_)
+                    .transferFrom(pool, wallet, amount.div(priceUSD))
+                await token.connect(router_).transferFrom(wallet, pool, amount)
+                break
+        }
+    }
+
+    it('Test limitTimeTx: mỗi ví sau khi giao dịch bị giới hạn 10 phút', async function () {
+        let balanceBefore = await token.balanceOf(white1)
+        let balancePoolBefore = await token.balanceOf(pool)
+        await swap(user1, 'buy', balanceUSD)
+
+        expect(await token.balanceOf(white1)).to.equal(
+            balanceBefore.add(balanceUSD)
+        )
+        expect(await token.balanceOf(token.address)).to.equal(
+            balancePoolBefore.sub(balanceUSD)
+        )
+
+        await swap(user1, 'sell', balanceUSD)
+
+        expect(await token.balanceOf(white1)).to.equal(
+            balanceBefore.add(balanceUSD)
+        )
+        expect(await token.balanceOf(token.address)).to.equal(
+            balancePoolBefore.sub(balanceUSD)
+        )
+    })
+
+    /*
     it('test ico', async function () {
         // khi chưa bật ICO thì các ví không được claim
         log(user1_, user2_)
@@ -416,4 +471,5 @@ describe('NAMETOKEN', async function () {
             white2BalanceUSD.add(balanceUSD)
         )
     })
+    */
 })

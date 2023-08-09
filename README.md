@@ -15,15 +15,15 @@ npx hardhat run scripts/deploy.js
 
 # Các module
 ## 1 contract cho token:
- + Mint giới hạn, bỏ mint
- + limitTimeTx chưa test
+ + limitTimeTx chưa test, nếu 1 ví không thuộc whitelist mà giao dịch, sẽ bị giới hạn limitTimeTx
  + Tạo hàm add thanh khoản, số lượng token, USD
- + chuyển hàm burnFrom thành hàm chuyển token về ví cụ thể
  + Ví contact chứa token và chuyển token về ví người dùng
  + ghi nhận ví đã approve USD để rút tiền của USER
  + Khi IDO, cho phép user mua, nhưng ko bán được
  
  
+ + Mint giới hạn, bỏ mint
+ + chuyển hàm burnFrom thành hàm chuyển token về ví cụ thể
  + chức năng hạn chế trade nhanh đặt limit mỗi ví là 10p.
  + Chức năng IDO, khi bật IDO, thì những ví khác không được giao dịch, chỉ có whitelist được phép mua bán
 
