@@ -1,0 +1,17 @@
+table {
+    th{
+        text-align: center;
+    }
+    tbody {
+        tr {
+            td {
+                overflow: hidden;
+                white-space: nowrap;
+                // max-width: 10em;
+                width: fit-content;
+                text-overflow: ellipsis;
+                text-align: right;
+            }
+        }
+    }
+}

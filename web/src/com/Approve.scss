@@ -1,0 +1,24 @@
+input.form-control {
+    box-shadow: 0px 6px 16px 0px rgb(193 193 193 / 28%);
+    padding: 10px 20px;
+    border-radius: 12px;
+}
+
+.panel {
+    margin-top: 1em;
+
+    input.form-control[name=toAddress] {
+        color: #999;
+        padding: 14px;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+
+label.form-label {
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1.5;
+}

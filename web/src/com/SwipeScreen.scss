@@ -1,0 +1,66 @@
+// body {
+//     -ms-touch-action: none;
+//     touch-action: none;
+
+// }
+
+.modal-backdrop {
+    background-color: #fff;
+
+    .modal-content {
+        border: none;
+    }
+}
+
+.drag_verify {
+    margin: auto;
+    text-align: center;
+    position: relative;
+    background: rgb(204, 204, 204);
+
+
+
+    .dv_handler {
+        top: 0;
+        left: 0;
+        border: 1px solid #ccc;
+        cursor: move;
+        display: block;
+        position: absolute;
+
+        &:before {
+            content: attr(before-content);
+            display: inline-block;
+        }
+
+        .van-icon {
+            // position: relative;
+            display: inline-block;
+            font: normal normal normal 14px/1 vant-icon;
+            font-size: inherit;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            top: 2px;
+
+        }
+    }
+
+    .dv_text {
+        top: 0;
+        color: #444;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -o-user-select: none;
+        -ms-user-select: none;
+    }
+
+    .dv_progress_bar {
+        background: rgba(8, 149, 229, 0.79);
+        position: absolute;
+        height: 34px;
+        width: 0;
+        transition: background 1s ease-in;
+        color: #fff;
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "PancakeRouterV2": {
+        "Name": "Pancake Router V2",
+        "Address": "0x10ED43C718714eb63d5aA57B78B54704E256024E",
+        "Abi": "PancakeRouterV2.json"
+    },
+    "UniswapV2Router02": {
+        "Name": "Uniswap V2 Router 02",
+        "Address": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+        "Abi": "UniswapV2Router02.json"
+    }
+}

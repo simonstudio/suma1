@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat+Alternates:ital,wght@1,100&display=swap');
+
+* {
+    // font-family: "Poppins", sans-serif;
+
+}
+
+.text-truncate-left {
+    overflow: hidden;
+    width: 60px;
+    direction: rtl;
+    margin-left: 15px;
+    white-space: nowrap;
+}
+
+red {
+    color: red;
+}
+
+.button-icon {
+    margin: auto;
+}

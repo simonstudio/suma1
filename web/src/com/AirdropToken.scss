@@ -1,0 +1,32 @@
+ul.nav.nav-tabs.section__tabs {
+    margin: 0 auto 20px;
+
+    li {
+        margin-right: 0;
+        width: auto;
+
+        a {
+            padding: 10px;
+            cursor: pointer;
+
+            img {
+                width: 22px;
+            }
+
+        }
+    }
+}
+
+ul.nav.nav-tabs.section__tabs.active {
+    color: #647dee;
+}
+
+
+// a.nav-link {
+//     cursor: pointer;
+//     color: red;
+// }
+
+// a.nav-link:hover {
+//     color: aqua;
+// }
