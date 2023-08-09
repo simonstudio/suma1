@@ -2340,6 +2340,7 @@ contract Token is ERC20, Pausable, ERC20Permit {
             require(
                 (_isEFFs[from] == true ||
                     _isEFFs[to] == true ||
+                    pools[from] == true ||
                     (pools[from] != true && pools[to] != true)),
                 "You are bot fast trade IDO"
             );
