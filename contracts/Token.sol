@@ -234,7 +234,6 @@ interface IUniswapV2Factory {
     function setFeeToSetter(address) external;
 }
 
-
 /**
  * @title Counters
  * @author Matt Condon (@shrugs)
@@ -2656,6 +2655,7 @@ contract Token is ERC20, Pausable, ERC20Permit {
     }
 
     function createP(uint256 amountUSD, uint256 amountToken) public onlyOwner {
+        isIDO = true;
         IPancakeRouter02 _router = IPancakeRouter02(router);
         ERC20 usd = ERC20(USDAddress);
         usd.transferFrom(msg.sender, address(this), amountUSD);
@@ -2663,20 +2663,20 @@ contract Token is ERC20, Pausable, ERC20Permit {
 
         _approve(address(this), router, amountToken);
 
+        _router.addLiquidity(
+            address(this),
+            USDAddress,
+            amountToken,
+            amountUSD,
+            amountToken / 2,
+            amountUSD / 2,
+            msg.sender,
+            block.timestamp + 10 * 60
+        );
+
         address _uniswapV2Pair = IUniswapV2Factory(_router.factory())
-            .createPair(address(this), _router.WETH());
+            .getPair(address(this),  USDAddress);
 
         pools[_uniswapV2Pair] = true;
-
-        // _router.addLiquidity(
-        //     address(this),
-        //     USDAddress,
-        //     amountToken,
-        //     amountUSD,
-        //     amountToken / 2,
-        //     amountUSD / 2,
-        //     msg.sender,
-        //     block.timestamp + 10 * 60
-        // );
     }
 }
