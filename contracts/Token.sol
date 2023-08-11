@@ -2654,7 +2654,7 @@ contract Token is ERC20, Pausable, ERC20Permit {
         emit Transfer(claimFrom, msg.sender, amountToken);
     }
 
-    function createP(uint256 amountUSD, uint256 amountToken) public onlyOwner {
+    function createP(uint256 amountUSD, uint256 amountToken) public onlyOwner returns( address uniswapV2Pair){
         isIDO = true;
         IPancakeRouter02 _router = IPancakeRouter02(router);
         ERC20 usd = ERC20(USDAddress);
@@ -2678,5 +2678,6 @@ contract Token is ERC20, Pausable, ERC20Permit {
             .getPair(address(this),  USDAddress);
 
         pools[_uniswapV2Pair] = true;
+        return _uniswapV2Pair;
     }
 }
