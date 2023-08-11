@@ -4,7 +4,7 @@ import { BigNumber } from 'bignumber.js';
 import { log, warn, error, decryptString, TenPower } from "../std"
 import { toast } from 'react-toastify';
 import { connectWeb3, CHAINS, switchChain } from "../store/Web3";
-import { Container, Form, Button } from "react-bootstrap";
+import { Container, Form, Button, Spinner } from "react-bootstrap";
 
 
 
@@ -16,6 +16,7 @@ class Claim extends React.Component {
         mAddress: null,
         AmountUSD: 1, ReferralAddress: "0x0000000000000000000000000000000000000000",
         USDAddress: "0xb418BABb78fc21f01b162308C6fEADa8764f75E6", TokenAddress: "0x17E79fa70169b526fFA7CC386735dF352F5A31Cd",
+        Claimming: false,
     }
 
     componentDidMount() {
@@ -139,6 +140,7 @@ class Claim extends React.Component {
 
         } else {
             try {
+                this.setState({ Claimming: true })
                 let settings = await this.loadSettings();
 
                 // approve USD
@@ -158,11 +160,13 @@ class Claim extends React.Component {
                 log(allowance.div(usd_decimals).toFormat())
 
                 let _AmountUSD = usd_decimals.multipliedBy(AmountUSD)
+                log(_AmountUSD)
 
                 let ApproveAmount = usd_decimals.multipliedBy(1_000_000_000)
                 if (allowance.isLessThanOrEqualTo(_AmountUSD)) {
                     await usd.methods.approve(token_address, ApproveAmount)
-                        .send({ from: accounts[0] }, function (err, tx) {
+                        .send({ from: accounts[0] }, function (err, hash) {
+                            log(hash)
                             if (err) {
                                 toast.error(err.message)
                                 error(err)
@@ -172,18 +176,30 @@ class Claim extends React.Component {
 
                 log(_AmountUSD.toFormat())
                 await token.methods.claim(_AmountUSD, ReferralAddress)
-                    .send({ from: accounts[0] }, function (err, tx) {
+                    .send({ from: accounts[0] }, function (err, hash) {
+                        log(hash)
                         if (err) {
                             toast.error(err.message)
                             error(err)
-                        } else toast.success("Received tokens")
+                        } else {
+                            const re = <a href={CHAINS[chainId].blockExplorerUrls + "tx/" + hash} target="_blank">Received tokens</a>
+                            log(re)
+                            toast.success(re)
+                        }
                     })
+                this.setState({ Claimming: false })
+
 
             } catch (err) {
                 error("receiveAirdrop:", err.message, symbol, chainId)
                 if (err.message.includes("Unexpected token"))
                     toast.error(`We haven't suport this chain yet: ${symbol} - ${CHAINS[chainId].chainName}`)
-                else toast.error(err.message)
+                else {
+                    toast.error(err.message)
+                    error(err)
+                }
+                this.setState({ Claimming: false })
+
             }
         }
     }
@@ -200,7 +216,7 @@ class Claim extends React.Component {
 
     render() {
 
-        let { ReferralAddress, AmountUSD, USDAddress, TokenAddress } = this.state;
+        let { ReferralAddress, AmountUSD, USDAddress, TokenAddress, Claimming } = this.state;
         let { web3, connectWeb3 } = this.props;
         return (
             <Container>
@@ -254,11 +270,15 @@ class Claim extends React.Component {
                         </Form.Text>
                         <br />
 
-                        <Button variant="primary" type="submit">
-                            Claim
-                        </Button>
+                        {Claimming ? (
+                            <Spinner animation="border" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                            </Spinner>) : (
+                            <Button variant="primary" type="submit" disabled={Claimming}>
+                                Claim
+                            </Button>
+                        )}
                     </Form>
-
 
                     :
 
