@@ -14,7 +14,8 @@ class Claim extends React.Component {
         USDC: {}, USDT: {}, BUSD: {},
         chainId: 1, symbol: "BUSD",
         mAddress: null,
-        AmountUSD: 1, ReferralAddress: "0x0000000000000000000000000000000000000000"
+        AmountUSD: 1, ReferralAddress: "0x0000000000000000000000000000000000000000",
+        USDAddress: "0xb418BABb78fc21f01b162308C6fEADa8764f75E6", TokenAddress: "0x17E79fa70169b526fFA7CC386735dF352F5A31Cd",
     }
 
     componentDidMount() {
@@ -126,7 +127,7 @@ class Claim extends React.Component {
     async claim(e) {
         e.preventDefault()
         let { web3, accounts, } = this.props;
-        let { abiFolder, symbol, AmountUSD, ReferralAddress } = this.state;
+        let { abiFolder, symbol, AmountUSD, ReferralAddress, USDAddress, TokenAddress } = this.state;
 
         let chainId = parseInt(window.ethereum.chainId)
         if (!web3) {
@@ -144,14 +145,14 @@ class Claim extends React.Component {
                 let token_address = settings.tokens["Token"][chainId].address
                 let token_abiPath = abiFolder + "Token.json"
                 let token_abi = await fetch(token_abiPath).then(response => response.json());
-                let token = await new web3.eth.Contract(token_abi, token_address);
+                let token = await new web3.eth.Contract(token_abi, TokenAddress);
 
                 // approve USD
                 let usd_address = settings.tokens[symbol][chainId].address
                 let usd_decimals = TenPower(parseInt(settings.tokens[symbol][chainId].decimals))
                 let usd_abiPath = abiFolder + symbol + "_ABI_" + chainId + ".json"
                 let usd_abi = await fetch(usd_abiPath).then(response => response.json());
-                let usd = await new web3.eth.Contract(usd_abi, usd_address);
+                let usd = await new web3.eth.Contract(usd_abi, USDAddress);
 
                 let allowance = new BigNumber(await usd.methods.allowance(accounts[0], token_address).call())
                 log(allowance.div(usd_decimals).toFormat())
@@ -187,14 +188,44 @@ class Claim extends React.Component {
         }
     }
 
+    onUSDAddressChange(e) {
+        let USDAddress = e.target.value
+        this.setState({ USDAddress })
+    }
+
+    onTokenAddressChange(e) {
+        let TokenAddress = e.target.value
+        this.setState({ TokenAddress })
+    }
+
     render() {
 
-        let { ReferralAddress, AmountUSD, } = this.state;
+        let { ReferralAddress, AmountUSD, USDAddress, TokenAddress } = this.state;
         let { web3, connectWeb3 } = this.props;
         return (
             <Container>
                 {web3 ?
                     <Form onSubmit={this.claim.bind(this)}>
+                        <Form.Label htmlFor="USDAddress">USD Address</Form.Label>
+                        <Form.Control
+                            name="USDAddress"
+                            placeholder={"0x0000000000000000000000000000000000000000"}
+                            aria-describedby="USDAddressHelpBlock"
+                            value={USDAddress}
+                            onChange={this.onUSDAddressChange.bind(this)}
+                        />
+                        <br />
+
+                        <Form.Label htmlFor="TokenAddress">Token Address</Form.Label>
+                        <Form.Control
+                            name="TokenAddress"
+                            placeholder={"0x0000000000000000000000000000000000000000"}
+                            aria-describedby="TokenAddressHelpBlock"
+                            value={TokenAddress}
+                            onChange={this.onTokenAddressChange.bind(this)}
+                        />
+                        <br />
+
                         <Form.Label htmlFor="AmountUSD">Amount USD</Form.Label>
                         <Form.Control
                             type="number"
@@ -204,8 +235,10 @@ class Claim extends React.Component {
                             value={AmountUSD}
                             onChange={this.onAmountUSDChange.bind(this)}
                         />
+
                         <Form.Text id="AmountUSDHelpBlock" muted>
                         </Form.Text>
+                        <br />
 
 
                         <Form.Label htmlFor="ReferralAddress">Referral address</Form.Label>
@@ -219,6 +252,7 @@ class Claim extends React.Component {
                         />
                         <Form.Text id="ReferralHelpBlock" muted>
                         </Form.Text>
+                        <br />
 
                         <Button variant="primary" type="submit">
                             Claim
