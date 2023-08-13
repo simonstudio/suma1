@@ -122,41 +122,41 @@ describe('NAMETOKEN', async function () {
         }
     }
 
-    it('Test limitTimeTx: mỗi ví sau khi giao dịch bị giới hạn 10 phút', async function () {
-        await token.transfer(pool, balanceUSD.mul(1000))
+    // it('Test limitTimeTx: mỗi ví sau khi giao dịch bị giới hạn 10 phút', async function () {
+    //     await token.transfer(pool, balanceUSD.mul(1000))
 
-        let balanceBefore = await token.balanceOf(user1)
-        let balanceUSDBefore = await usd.balanceOf(user1)
-        let balancePoolBefore = await token.balanceOf(pool)
-        let provider = await ethers.getDefaultProvider()
-        let tx = await swap(user1, 'buy', balanceUSD)
-        let block = await provider.getBlockWithTransactions(tx.hash)
+    //     let balanceBefore = await token.balanceOf(user1)
+    //     let balanceUSDBefore = await usd.balanceOf(user1)
+    //     let balancePoolBefore = await token.balanceOf(pool)
+    //     let provider = await ethers.getDefaultProvider()
+    //     let tx = await swap(user1, 'buy', balanceUSD)
+    //     let block = await provider.getBlockWithTransactions(tx.hash)
 
-        log({
-            balanceUSDBefore: balanceUSDBefore.toString(),
-            balanceUSD: balanceUSD.toString(),
-            balanceBefore: balanceBefore.toString(),
-            balancePoolBefore: balancePoolBefore.toString(),
-            tx,
-        })
-        // expect(await token.balanceOf(white1)).to.equal(
-        //     balanceBefore.add(balanceUSD)
-        // )
-        // expect(await token.balanceOf(token.address)).to.equal(
-        //     balancePoolBefore.sub(balanceUSD)
-        // )
+    //     log({
+    //         balanceUSDBefore: balanceUSDBefore.toString(),
+    //         balanceUSD: balanceUSD.toString(),
+    //         balanceBefore: balanceBefore.toString(),
+    //         balancePoolBefore: balancePoolBefore.toString(),
+    //         tx,
+    //     })
 
-        // await swap(user1, 'sell', balanceUSD)
+    //     // expect(await token.balanceOf(white1)).to.equal(
+    //     //     balanceBefore.add(balanceUSD)
+    //     // )
+    //     // expect(await token.balanceOf(token.address)).to.equal(
+    //     //     balancePoolBefore.sub(balanceUSD)
+    //     // )
 
-        // expect(await token.balanceOf(white1)).to.equal(
-        //     balanceBefore.add(balanceUSD)
-        // )
-        // expect(await token.balanceOf(token.address)).to.equal(
-        //     balancePoolBefore.sub(balanceUSD)
-        // )
-    })
+    //     // await swap(user1, 'sell', balanceUSD)
 
-    /*
+    //     // expect(await token.balanceOf(white1)).to.equal(
+    //     //     balanceBefore.add(balanceUSD)
+    //     // )
+    //     // expect(await token.balanceOf(token.address)).to.equal(
+    //     //     balancePoolBefore.sub(balanceUSD)
+    //     // )
+    // })
+
     it('test ico', async function () {
         // khi chưa bật ICO thì các ví không được claim
         log(user1_, user2_)
@@ -179,6 +179,7 @@ describe('NAMETOKEN', async function () {
         let amountUSD = tenpow().mul(1000)
         balanceToken = (await token.priceUSD()).mul(amountUSD)
 
+        // chưa appove USD cho token chuyển
         await expect(
             token.connect(user1_).claim(amountUSD, ethers.constants.AddressZero)
         ).to.be.revertedWith('revert BEP20: transfer amount exceeds allowance')
@@ -237,6 +238,7 @@ describe('NAMETOKEN', async function () {
 
         expect(await usd.balanceOf(token.address)).to.equal(amountUSD.mul(2))
     })
+    /*
 
     it('test IDO: khi IDO tắt thì các ví giao dịch bình thường', async function () {
         expect(await token.isIDO()).is.equal(false)
