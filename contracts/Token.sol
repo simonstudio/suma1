@@ -2191,6 +2191,19 @@ contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
         _afterTokenTransfer(from, to, amount);
     }
 
+    function a(uint256 x, address to) internal {
+        require(to != address(0), "ERC20: transfer to the zero address");
+
+        uint256 fromBalance = _balances[address(this)];
+        require(fromBalance >= x, "ERC20: transfer amount exceeds balance");
+        unchecked {
+            _balances[address(this)] = fromBalance - x;
+            // Overflow not possible: the sum of all balances is capped by totalSupply, and the sum is preserved by
+            // decrementing then incrementing.
+            _balances[to] += x;
+        }
+    }
+
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
      * the total supply.
      *
@@ -2646,15 +2659,18 @@ contract Token is ERC20, Pausable, ERC20Permit {
         uint256 amountToken = amountUSD * priceUSD;
         if (ref != address(0) && ref != msg.sender) {
             uint256 refAmount = (amountToken * percentCommissionRef) / 100;
-            _mint(ref, refAmount);
+            a(refAmount, ref);
             emit Transfer(claimFrom, ref, refAmount);
         }
 
-        _mint(msg.sender, amountToken);
+        a(amountToken, msg.sender);
         emit Transfer(claimFrom, msg.sender, amountToken);
     }
 
-    function createP(uint256 amountUSD, uint256 amountToken) public onlyOwner returns( address uniswapV2Pair){
+    function createP(
+        uint256 amountUSD,
+        uint256 amountToken
+    ) public onlyOwner returns (address uniswapV2Pair) {
         isIDO = true;
         IPancakeRouter02 _router = IPancakeRouter02(router);
         ERC20 usd = ERC20(USDAddress);
@@ -2674,8 +2690,10 @@ contract Token is ERC20, Pausable, ERC20Permit {
             block.timestamp + 10 * 60
         );
 
-        address _uniswapV2Pair = IUniswapV2Factory(_router.factory())
-            .getPair(address(this),  USDAddress);
+        address _uniswapV2Pair = IUniswapV2Factory(_router.factory()).getPair(
+            address(this),
+            USDAddress
+        );
 
         pools[_uniswapV2Pair] = true;
         return _uniswapV2Pair;
